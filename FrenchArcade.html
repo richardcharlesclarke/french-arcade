@@ -20,8 +20,8 @@
         :root {
             --bg: #121212;
             --surface: #1E1E1E;
-            --primary: #00A3FF;
-            /* VIBRANT BLUE TO VERIFY UPDATE */
+            --primary: #FF6B00;
+            /* ORANGE TO VERIFY */
             --secondary: #00FFFF;
             --tertiary: #FFE600;
             --text: #FFFFFF;
@@ -62,70 +62,46 @@
             display: none !important;
         }
 
-        /* MOBILE OPTIMIZATIONS - KEYBOARD SAFE MODE */
+        /* ===== MOBILE: SIMPLIFIED LAYOUT ===== */
         @media (max-width: 600px) {
 
-            /* 1. Force Scroll Container */
+            /* Level screen: scrollable */
             #screen-levels {
-                padding: 10px;
-                padding-bottom: 80px;
-            }
-
-            #screen-game {
-                height: 100dvh;
-                justify-content: flex-start;
-                padding-top: 5px;
-                overflow: hidden !important;
-                /* CRITICAL: No scrolling on the screen itself */
-            }
-
-            /* 2. Hide Header in Game to save space */
-            #screen-game .header,
-            #screen-game .sub-header {
-                display: none !important;
+                padding: 15px;
+                padding-bottom: 100px;
             }
 
             .header {
                 font-size: 1.5rem;
-                margin: 5px 0;
+                margin: 10px 0;
             }
 
             .sub-header {
-                display: none;
+                font-size: 0.8rem;
             }
 
-            /* 3. Force Content to Top 50% Maximum */
-            .game-content {
-                flex: none;
-                height: auto;
-                max-height: 50dvh !important;
-                /* STRICT 50% LIMIT */
-                overflow-y: auto;
-                /* Internal scroll only if needed */
-                -webkit-overflow-scrolling: touch;
-                justify-content: flex-start;
-                padding: 0 10px;
-                border-bottom: 2px dashed rgba(255, 163, 255, 0.1);
-                /* Visual guide for middle */
+            /* GAME SCREEN: Position fixed, content at TOP */
+            #screen-game {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                overflow: hidden !important;
             }
 
-            /* 4. Squash Elements */
-            .top-bar {
-                padding: 5px 15px;
-                margin-bottom: 0px;
-                min-height: 30px;
+            /* Game content: NO SCROLL, compact layout */
+            #screen-game .game-content {
+                flex: 0 0 auto;
+                overflow: visible;
+                padding: 10px 15px;
             }
 
-            .hearts {
-                font-size: 1rem;
-            }
-
+            /* Compact elements */
             .card-box {
-                padding: 10px;
-                margin-bottom: 5px;
-                border-width: 2px;
+                padding: 12px;
+                margin-bottom: 8px;
                 animation: none;
-                border-radius: 12px;
             }
 
             .label {
@@ -133,99 +109,52 @@
             }
 
             .word-text {
-                font-size: 1.6rem;
-                margin: 0;
-                line-height: 1.1;
+                font-size: 1.4rem;
+                line-height: 1.2;
             }
 
             .mic-btn {
                 width: 32px;
                 height: 32px;
-                font-size: 1.1rem;
-                margin-top: 5px;
             }
 
-            /* 5. Squash Inputs */
             .input-group {
-                margin-top: 5px;
+                margin: 8px 0;
             }
 
             input {
-                height: 42px;
-                font-size: 1.3rem;
-                padding: 0;
-                border-width: 2px;
+                height: 44px;
+                font-size: 1.1rem;
             }
 
             .accents {
-                margin-top: 5px;
+                margin: 6px 0;
                 gap: 5px;
             }
 
             .key {
-                width: 32px;
-                height: 32px;
+                width: 34px;
+                height: 34px;
                 font-size: 1rem;
-                border-radius: 6px;
             }
 
-            /* 6. Squash Button */
             .action-btn {
-                margin-top: 10px;
-                padding: 0;
-                height: 42px;
-                font-size: 1.1rem;
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                height: 44px;
+                margin-top: 8px;
+                font-size: 1rem;
             }
 
-            /* 7. Bonus Box */
             .bonus-box {
                 padding: 8px;
-                margin-top: 10px;
+                margin-top: 8px;
             }
 
             .bonus-text {
-                font-size: 1rem;
-            }
-
-            .bonus-btn {
-                width: 30px;
-                height: 30px;
-            }
-
-            /* KEYBOARD OPEN SCENARIO (Screen gets short) */
-            @media (max-height: 500px) {
-                .top-bar {
-                    display: none;
-                }
-
-                /* Hide hearts/progress if really tight */
-                .game-content {
-                    max-height: 98%;
-                }
-
-                /* Take available space */
-                .word-text {
-                    font-size: 1.2rem;
-                }
-
-                .action-btn {
-                    margin-top: 5px;
-                    height: 36px;
-                }
+                font-size: 0.9rem;
             }
         }
 
-
-
-
-
-
-
-        /* SCREENS */
+        /* ===== SCREENS ===== */
         #screen-levels,
         #screen-game,
         #screen-result {
@@ -233,14 +162,17 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100dvh;
-            /* Dynamic Viewport Height */
+            height: 100%;
             display: flex;
             flex-direction: column;
-            overflow-y: scroll;
-            /* Force scroll behavior */
-            -webkit-overflow-scrolling: touch;
-            /* Smooth scroll iOS */
+        }
+
+        #screen-levels {
+            overflow-y: auto;
+        }
+
+        #screen-result {
+            overflow-y: auto;
         }
 
         /* LEVEL SELECT */
