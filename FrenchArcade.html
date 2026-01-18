@@ -61,6 +61,7 @@
         }
 
         /* MOBILE OPTIMIZATIONS (Max fit above keyboard) */
+        /* MOBILE OPTIMIZATIONS (Max fit above keyboard) */
         @media (max-width: 600px) {
             #screen-levels {
                 padding: 10px;
@@ -75,81 +76,134 @@
             /* Compact Game View */
             .game-content {
                 justify-content: flex-start;
+                /* Force content to top */
+                padding: 10px 15px 0;
+                /* Min top padding */
+                flex: 1 1 auto;
+                min-height: 0;
+                /* Allow shrinking */
+            }
+
+            .top-bar {
                 padding: 5px 15px;
+                margin-bottom: 0px;
+            }
+
+            .hearts {
+                font-size: 1rem;
+                letter-spacing: 0;
             }
 
             .card-box {
                 padding: 10px;
                 margin-bottom: 5px;
                 border-width: 2px;
+                animation: none;
+                /* Stop floating to save CPU/Visuals */
+                /* flex-shrink: 1; */
+            }
+
+            .label {
+                font-size: 0.6rem;
+                margin-bottom: 0px;
             }
 
             .word-text {
-                font-size: 1.5rem;
-                margin-bottom: 2px;
+                font-size: 1.4rem;
+                margin-bottom: 0px;
+                line-height: 1.2;
             }
 
             .mic-btn {
-                width: 30px;
-                height: 30px;
+                width: 28px;
+                height: 28px;
                 font-size: 1rem;
                 margin-top: 2px;
             }
 
-            /* Compact Game Layout for Keyboard */
-            /* Align into top */
-
-            .label {
-                margin-bottom: 2px;
-                font-size: 0.6rem;
+            /* Input Area */
+            .input-group {
+                margin-top: 5px;
             }
 
             input {
-                font-size: 1.3rem;
-                padding: 5px;
+                font-size: 1.2rem;
+                padding: 4px;
                 border-width: 2px;
+                height: 40px;
             }
 
-            .action-btn {
-                padding: 10px;
-                margin-top: 8px;
-                font-size: 1rem;
-                width: 100%;
-            }
-
-            .key {
-                width: 30px;
-                height: 30px;
-                font-size: 0.9rem;
-                border-radius: 6px;
-            }
-
+            /* Accents & Actions */
             .accents {
-                margin-top: 5px;
+                margin-top: 4px;
                 gap: 4px;
             }
 
-            /* Hide header on very short screens to save space */
-            @media (max-height: 600px) {
-                .header {
+            .key {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+                border-radius: 4px;
+            }
+
+            .action-btn {
+                padding: 8px;
+                margin-top: 8px;
+                font-size: 0.9rem;
+                width: 100%;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* KEYBOARD UP MODE (Short screens) */
+            @media (max-height: 500px) {
+
+                .header,
+                .sub-header {
                     display: none;
+                }
+
+                .top-bar {
+                    padding: 2px 10px;
+                }
+
+                .card-box {
+                    padding: 5px;
+                    margin-bottom: 5px;
+                    border-radius: 10px;
+                }
+
+                .word-text {
+                    font-size: 1.2rem;
+                }
+
+                .mic-btn {
+                    width: 24px;
+                    height: 24px;
+                    font-size: 0.8em;
+                }
+
+                .game-content {
+                    padding-top: 0;
                 }
             }
 
             /* Bonus Box Compact */
             .bonus-box {
-                padding: 8px;
-                margin-top: 8px;
+                padding: 5px;
+                margin-top: 5px;
             }
 
             .bonus-text {
-                font-size: 1em;
+                font-size: 0.9em;
             }
 
             .bonus-btn {
-                width: 28px;
-                height: 28px;
-                font-size: 0.9em;
+                width: 24px;
+                height: 24px;
+                font-size: 0.8em;
             }
         }
 
