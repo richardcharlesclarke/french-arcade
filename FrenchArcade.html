@@ -61,7 +61,6 @@
         }
 
         /* MOBILE OPTIMIZATIONS (Max fit above keyboard) */
-        /* MOBILE OPTIMIZATIONS (Max fit above keyboard) */
         @media (max-width: 600px) {
             #screen-levels {
                 padding: 10px;
@@ -69,15 +68,21 @@
             }
 
             .header {
-                font-size: 1.8rem;
-                margin: 10px 0 5px;
+                font-size: 1.5rem;
+                margin: 5px 0;
             }
+
+            .sub-header {
+                display: none;
+            }
+
+            /* Hide sub-header on mobile */
 
             /* Compact Game View */
             .game-content {
                 justify-content: flex-start;
                 /* Force content to top */
-                padding: 10px 15px 0;
+                padding: 5px 10px 0;
                 /* Min top padding */
                 flex: 1 1 auto;
                 min-height: 0;
@@ -85,7 +90,7 @@
             }
 
             .top-bar {
-                padding: 5px 15px;
+                padding: 5px 10px;
                 margin-bottom: 0px;
             }
 
@@ -100,24 +105,24 @@
                 border-width: 2px;
                 animation: none;
                 /* Stop floating to save CPU/Visuals */
-                /* flex-shrink: 1; */
+                border-radius: 12px;
             }
 
             .label {
-                font-size: 0.6rem;
-                margin-bottom: 0px;
+                display: none;
             }
 
+            /* Hide label to save space */
             .word-text {
-                font-size: 1.4rem;
+                font-size: 1.3rem;
                 margin-bottom: 0px;
-                line-height: 1.2;
+                line-height: 1.1;
             }
 
             .mic-btn {
-                width: 28px;
-                height: 28px;
-                font-size: 1rem;
+                width: 26px;
+                height: 26px;
+                font-size: 0.9rem;
                 margin-top: 2px;
             }
 
@@ -128,15 +133,15 @@
 
             input {
                 font-size: 1.2rem;
-                padding: 4px;
+                padding: 0px;
                 border-width: 2px;
-                height: 40px;
+                height: 36px;
             }
 
             /* Accents & Actions */
             .accents {
                 margin-top: 4px;
-                gap: 4px;
+                gap: 3px;
             }
 
             .key {
@@ -147,11 +152,11 @@
             }
 
             .action-btn {
-                padding: 8px;
-                margin-top: 8px;
+                padding: 0;
+                margin-top: 6px;
                 font-size: 0.9rem;
                 width: 100%;
-                height: 40px;
+                height: 38px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -159,9 +164,7 @@
 
             /* KEYBOARD UP MODE (Short screens) */
             @media (max-height: 500px) {
-
-                .header,
-                .sub-header {
+                .header {
                     display: none;
                 }
 
@@ -172,17 +175,17 @@
                 .card-box {
                     padding: 5px;
                     margin-bottom: 5px;
-                    border-radius: 10px;
+                    border-radius: 8px;
                 }
 
                 .word-text {
-                    font-size: 1.2rem;
+                    font-size: 1.1rem;
                 }
 
                 .mic-btn {
-                    width: 24px;
-                    height: 24px;
-                    font-size: 0.8em;
+                    width: 22px;
+                    height: 22px;
+                    font-size: 0.7em;
                 }
 
                 .game-content {
@@ -623,7 +626,7 @@
 
     <!-- LEVEL SELECT -->
     <div id="screen-levels">
-        <div class="header">FRENCH ARCADE</div>
+        <div class="header">FRENCH ARCADE 2</div>
         <div class="sub-header">SELECT MISSION</div>
         <div id="grid" class="grid"></div>
 
