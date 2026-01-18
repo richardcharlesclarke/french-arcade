@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>🇫🇷 French Arcade</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #121212;
+            --surface: #1E1E1E;
+            --primary: #FF00FF;
+            --secondary: #00FFFF;
+            --tertiary: #FFE600;
+            --text: #FFFFFF;
+            --dim: #888888;
+            --success: #00FF99;
+            --error: #FF3333;
+            --radius: 16px;
+        }
+
+        /* RESET */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(#222 15%, transparent 16%);
+            background-size: 20px 20px;
+        }
+
+        button {
+            border: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* SCREENS */
+        #screen-levels,
+        #screen-game,
+        #screen-result {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* LEVEL SELECT */
+        #screen-levels {
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0 5px;
+        }
+
+        .sub-header {
+            text-align: center;
+            color: var(--dim);
+            margin-bottom: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .level-card {
+            background: var(--surface);
+            border: 2px solid #333;
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .level-card:active {
+            transform: scale(0.98);
+            border-color: var(--secondary);
+        }
+
+        .level-info h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .level-info span {
+            font-size: 0.8rem;
+            color: var(--dim);
+            font-family: 'Space Mono';
+        }
+
+        .level-score {
+            font-size: 1.2rem;
+            opacity: 0.5;
+        }
+
+        /* SETTINGS TOGGLE */
+        .mode-toggle {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #222;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid #444;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s;
+        }
+
+        .mode-toggle:active {
+            transform: translateX(-50%) scale(0.95);
+            background: #333;
+        }
+
+        .flag {
+            font-size: 1.2rem;
+        }
+
+        .arrow {
+            color: var(--dim);
+            font-weight: bold;
+        }
+
+        /* GAME SCREEN */
+        #screen-game {
+            background: rgba(18, 18, 18, 0.98);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .exit-btn {
+            font-size: 1.5rem;
+            color: var(--dim);
+            background: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .progress-track {
+            flex: 1;
+            height: 6px;
+            background: #333;
+            margin: 0 15px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .hearts {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .game-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card-box {
+            position: relative;
+            background: var(--surface);
+            border: 3px solid var(--primary);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            /* Float animation */
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .label {
+            display: block;
+            color: var(--secondary);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .word-text {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+
+        .mic-btn {
+            background: #333;
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .mic-btn:active {
+            background: var(--secondary);
+            color: black;
+        }
+
+        /* INPUT */
+        .input-group {
+            width: 100%;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid #444;
+            color: white;
+            font-size: 1.8rem;
+            text-align: center;
+            padding: 10px;
+            font-family: 'Outfit';
+            font-weight: 500;
+        }
+
+        input:focus {
+            border-color: var(--secondary);
+        }
+
+        input.correct {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        input.wrong {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .accents {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .key {
+            background: #333;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #111;
+        }
+
+        .key:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        .action-btn {
+            background: var(--secondary);
+            color: black;
+            font-family: 'Space Mono';
+            font-weight: 700;
+            font-size: 1.2rem;
+            width: 100%;
+            padding: 18px;
+            border-radius: 50px;
+            margin-top: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(0, 255, 255, 0.4);
+            text-transform: uppercase;
+        }
+
+        .action-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0, 255, 255, 0.4);
+        }
+
+        .feedback {
+            text-align: center;
+            min-height: 20px;
+            margin-top: 10px;
+            color: var(--tertiary);
+            font-weight: bold;
+        }
+
+        /* RESULTS */
+        #screen-result {
+            background: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* BONUS SENTENCE */
+        .bonus-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed var(--tertiary);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            width: 100%;
+            display: none;
+            /* hidden by default */
+            flex-direction: column;
+            align-items: center;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .bonus-title {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            color: var(--tertiary);
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .bonus-text {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .bonus-trans {
+            font-size: 0.9em;
+            color: var(--dim);
+            font-style: italic;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .bonus-btn {
+            background: var(--tertiary);
+            color: black;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .bonus-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LEVEL SELECT -->
+    <div id="screen-levels">
+        <div class="header">ARCADE 2.0</div>
+        <div class="sub-header">SELECT MISSION</div>
+        <div id="grid" class="grid"></div>
+
+        <div class="mode-toggle" onclick="toggleMode()">
+            <span class="flag" id="flag-src">🇺🇸</span>
+            <span class="arrow">➔</span>
+            <span class="flag" id="flag-dest">🇫🇷</span>
+            <span style="font-size: 0.8rem; color: #aaa; margin-left: 5px;">TAP TO SWITCH</span>
+        </div>
+    </div>
+
+    <!-- GAME -->
+    <div id="screen-game" class="hidden">
+        <div class="top-bar">
+            <button class="exit-btn" onclick="exitGame()">✕</button>
+            <div class="progress-track">
+                <div class="progress-fill" id="bar"></div>
+            </div>
+            <div class="hearts" id="hearts">❤️❤️❤️</div>
+        </div>
+
+        <div class="game-content">
+            <div class="card-box">
+                <span class="label" id="q-label">TRANSLATE</span>
+                <div class="word-text" id="q-text">...</div>
+                <div class="mic-btn" onclick="playAudio()" id="btn-audio">🔊</div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="inp" placeholder="..." autocomplete="off" autocorrect="off" autocapitalize="off"
+                    spellcheck="false">
+                <div class="accents" id="accent-bar">
+                    <div class="key" onclick="typeKey('é')">é</div>
+                    <div class="key" onclick="typeKey('è')">è</div>
+                    <div class="key" onclick="typeKey('à')">à</div>
+                    <div class="key" onclick="typeKey('ç')">ç</div>
+                    <div class="key" onclick="typeKey('ê')">ê</div>
+                    <div class="key" onclick="typeKey('ô')">ô</div>
+                </div>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <!-- BONUS SENTENCE BOX -->
+            <div id="bonus-box" class="bonus-box">
+                <div class="bonus-title">Extra Credit!</div>
+                <div class="bonus-text" id="bonus-fr">...</div>
+                <div class="bonus-trans" id="bonus-en">...</div>
+                <div class="bonus-btn" onclick="playBonusAudio()">🔊</div>
+            </div>
+            <button class="action-btn" id="btn-action" onclick="check()">CHECK</button>
+        </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="screen-result" class="hidden">
+        <h1 style="font-size: 3rem; margin:0;" id="res-title">CLEARED</h1>
+        <div style="font-size: 6rem; font-weight: 900; color: var(--secondary); margin: 20px 0;" id="res-pct">100%</div>
+        <button class="action-btn" onclick="exitGame()" style="max-width:300px;">MENU</button>
+    </div>
+
+    <script>
+        const DATA = [{ "id": "level_0", "name": "Introductory vocabulary", "words": [{ "french": "l'acteur/actrice (m./f.)", "english": "actor, actress", "needed": "Yes" }, { "french": "actif/active", "english": "active", "needed": "Yes" }, { "french": "adorer", "english": "to love", "needed": "Yes" }, { "french": "l'allemand (n.) (m.)", "english": "German (language)", "needed": "No" }, { "french": "aller", "english": "to go", "needed": "Yes" }, { "french": "l'ami(e) (m./f.)", "english": "friend", "needed": "Yes" }, { "french": "amusant(e)", "english": "amusing, fun, funny", "needed": "Yes" }, { "french": "l'anglais (n.) (m.)", "english": "English (language)", "needed": "No" }, { "french": "anglais(e) (adj.)", "english": "English", "needed": "No" }, { "french": "s'appeler", "english": "to be called", "needed": "Yes" }, { "french": "apporter", "english": "to bring", "needed": "Yes" }, { "french": "apr\u00e8s", "english": "after", "needed": "Yes" }, { "french": "l'apr\u00e8s-midi (m.)", "english": "afternoon", "needed": "Yes" }, { "french": "assez", "english": "quite, enough", "needed": "Yes" }, { "french": "au ch\u00f4mage", "english": "unemployed", "needed": "Yes" }, { "french": "autre chose", "english": "anything else", "needed": "Yes" }, { "french": "avoir", "english": "to have", "needed": "Yes" }, { "french": "beaucoup (de)", "english": "a lot (of)", "needed": "Yes" }, { "french": "le beau-p\u00e8re", "english": "stepfather, father-in-law", "needed": "Yes" }, { "french": "la belle-m\u00e8re", "english": "stepmother, mother-in-law", "needed": "Yes" }, { "french": "la biblioth\u00e8que", "english": "library", "needed": "Yes" }, { "french": "bien", "english": "good, well", "needed": "Yes" }, { "french": "blanc (adj.)", "english": "white", "needed": "Yes" }, { "french": "boire", "english": "to drink", "needed": "Yes" }, { "french": "bon(ne)", "english": "good", "needed": "Yes" }, { "french": "bonjour", "english": "good morning, afternoon", "needed": "Yes" }, { "french": "brun(e)", "english": "brown", "needed": "Yes" }, { "french": "\u00e7a", "english": "it, that", "needed": "Yes" }, { "french": "le caf\u00e9", "english": "coffee, coffee shop", "needed": "Yes" }, { "french": "car", "english": "because", "needed": "Yes" }, { "french": "c\u00e9l\u00e8bre", "english": "famous", "needed": "Yes" }, { "french": "cependant", "english": "however", "needed": "Yes" }, { "french": "la chanson", "english": "song", "needed": "Yes" }, { "french": "le/la chanteur/chanteuse", "english": "singer", "needed": "Yes" }, { "french": "les cheveux (m. pl.)", "english": "hair", "needed": "Yes" }, { "french": "le ch\u00f4mage", "english": "unemployment", "needed": "Yes" }, { "french": "cinq", "english": "five", "needed": "Yes" }, { "french": "le coll\u00e8ge", "english": "(secondary) school", "needed": "Yes" }, { "french": "comme", "english": "such as, like", "needed": "Yes" }, { "french": "le concert", "english": "concert", "needed": "Yes" }, { "french": "la construction", "english": "construction", "needed": "Yes" }, { "french": "content(e)", "english": "happy", "needed": "Yes" }, { "french": "le cours", "english": "lesson", "needed": "Yes" }, { "french": "court(e)", "english": "short", "needed": "Yes" }, { "french": "le/la cousin(e)", "english": "cousin", "needed": "Yes" }, { "french": "dernier/derni\u00e8re", "english": "last", "needed": "Yes" }, { "french": "d\u00e9tester", "english": "to hate", "needed": "Yes" }, { "french": "deux", "english": "two", "needed": "Yes" }, { "french": "devenir", "english": "to become", "needed": "Yes" }, { "french": "difficile", "english": "difficult", "needed": "Yes" }, { "french": "dix", "english": "ten", "needed": "Yes" }, { "french": "du/de la/des/de l'", "english": "some", "needed": "Yes" }, { "french": "l'eau (f.)", "english": "water", "needed": "Yes" }, { "french": "l'\u00e9cole (f.)", "english": "school", "needed": "Yes" }, { "french": "\u00e9crire", "english": "to write", "needed": "Yes" }, { "french": "l'\u00e9ducation (f.)", "english": "education", "needed": "Yes" }, { "french": "en g\u00e9n\u00e9ral", "english": "in general", "needed": "Yes" }, { "french": "en plus", "english": "in addition", "needed": "Yes" }, { "french": "en premier", "english": "first of all, firstly", "needed": "No" }, { "french": "l'enfant (m.)", "english": "child", "needed": "Yes" }, { "french": "ennuyeux/ennuyeuse", "english": "boring", "needed": "Yes" }, { "french": "ensemble", "english": "together", "needed": "Yes" }, { "french": "ensuite", "english": "then", "needed": "Yes" }, { "french": "\u00e9quilibr\u00e9(e)", "english": "balanced", "needed": "Yes" }, { "french": "l'\u00e9quipe (f.)", "english": "team", "needed": "Yes" }, { "french": "l'espagnol (n.) (m.)", "english": "Spanish (language)", "needed": "No" }, { "french": "espagnol(e) (adj.)", "english": "Spanish", "needed": "No" }, { "french": "esp\u00e9rer", "english": "to hope", "needed": "Yes" }, { "french": "\u00eatre", "english": "to be", "needed": "Yes" }, { "french": "facile", "english": "easy", "needed": "Yes" }, { "french": "le/la facteur/factrice", "english": "postman/postwoman", "needed": "Yes" }, { "french": "faire", "english": "to do, make", "needed": "Yes" }, { "french": "la famille", "english": "family", "needed": "Yes" }, { "french": "la femme", "english": "woman, wife", "needed": "Yes" }, { "french": "la fille", "english": "girl, daughter", "needed": "Yes" }, { "french": "le film", "english": "film", "needed": "Yes" }, { "french": "le fils", "english": "son", "needed": "Yes" }, { "french": "le foot(ball)", "english": "football", "needed": "Yes" }, { "french": "le fran\u00e7ais (n.)", "english": "French (language)", "needed": "No" }, { "french": "fran\u00e7ais(e) (adj.)", "english": "French", "needed": "No" }, { "french": "la France", "english": "France", "needed": "Yes" }, { "french": "le fr\u00e8re", "english": "brother", "needed": "Yes" }, { "french": "les frites (f. pl.)", "english": "chips", "needed": "Yes" }, { "french": "le fromage", "english": "cheese", "needed": "Yes" }, { "french": "le fruit", "english": "fruit", "needed": "Yes" }, { "french": "gagner", "english": "to earn, win", "needed": "Yes" }, { "french": "le g\u00e2teau", "english": "cake", "needed": "Yes" }, { "french": "gauche", "english": "left", "needed": "Yes" }, { "french": "g\u00e9n\u00e9ralement", "english": "generally", "needed": "Yes" }, { "french": "g\u00e9nial(e)", "english": "great", "needed": "Yes" }, { "french": "la g\u00e9ographie", "english": "geography", "needed": "No" }, { "french": "la glace", "english": "ice, ice cream", "needed": "Yes" }, { "french": "le gouvernement", "english": "government", "needed": "Yes" }, { "french": "la grand-m\u00e8re", "english": "grandmother", "needed": "Yes" }, { "french": "le grand-p\u00e8re", "english": "grandfather", "needed": "Yes" }, { "french": "habiter", "english": "to live", "needed": "Yes" }, { "french": "l'heure (f.)", "english": "hour, time, o'clock", "needed": "Yes" }, { "french": "l'histoire (f.)", "english": "history, story", "needed": "No" }, { "french": "important(e)", "english": "important", "needed": "Yes" }, { "french": "l'ind\u00e9pendance (f.)", "english": "independence", "needed": "Yes" }, { "french": "l'informatique (m.)", "english": "IT, computer science", "needed": "No" }, { "french": "int\u00e9ressant(e)", "english": "interesting", "needed": "Yes" }, { "french": "jamais", "english": "never", "needed": "Yes" }, { "french": "je voudrais (vouloir)", "english": "I would like", "needed": "Yes" }, { "french": "jeune", "english": "young", "needed": "Yes" }, { "french": "jouer", "english": "to play", "needed": "Yes" }, { "french": "juillet", "english": "July", "needed": "Yes" }, { "french": "le lait", "english": "milk", "needed": "Yes" }, { "french": "le/la/l'/les", "english": "the", "needed": "Yes" }, { "french": "la le\u00e7on", "english": "lesson", "needed": "Yes" }, { "french": "le l\u00e9gume", "english": "vegetable", "needed": "Yes" }, { "french": "la lettre", "english": "letter", "needed": "Yes" }, { "french": "leur(s)", "english": "(to) them, their", "needed": "Yes" }, { "french": "long(ue)", "english": "long", "needed": "Yes" }, { "french": "la maison", "english": "house", "needed": "Yes" }, { "french": "manger", "english": "to eat", "needed": "Yes" }, { "french": "(le) mardi", "english": "Tuesday", "needed": "Yes" }, { "french": "le mari", "english": "husband", "needed": "Yes" }, { "french": "les maths (f. pl.)", "english": "maths", "needed": "No" }, { "french": "le matin", "english": "morning", "needed": "Yes" }, { "french": "m\u00e9chant(e)", "english": "naughty, nasty", "needed": "Yes" }, { "french": "la m\u00e8re", "english": "mother", "needed": "Yes" }, { "french": "le m\u00e9tier", "english": "job", "needed": "Yes" }, { "french": "la mode", "english": "fashion", "needed": "Yes" }, { "french": "moi", "english": "me", "needed": "Yes" }, { "french": "la musique", "english": "music", "needed": "No" }, { "french": "la natation", "english": "swimming", "needed": "No" }, { "french": "nul(le)", "english": "rubbish", "needed": "Yes" }, { "french": "l'oncle (m.)", "english": "uncle", "needed": "Yes" }, { "french": "l'ordinateur (m.)", "english": "computer", "needed": "Yes" }, { "french": "o\u00f9", "english": "where", "needed": "Yes" }, { "french": "le pain", "english": "bread", "needed": "Yes" }, { "french": "par contre", "english": "on the other hand", "needed": "Yes" }, { "french": "parce que", "english": "because", "needed": "Yes" }, { "french": "parfois", "english": "sometimes", "needed": "Yes" }, { "french": "passer", "english": "to spend, to pass", "needed": "Yes" }, { "french": "le p\u00e8re", "english": "father", "needed": "Yes" }, { "french": "la personne", "english": "person", "needed": "Yes" }, { "french": "le petit-d\u00e9jeuner", "english": "breakfast", "needed": "Yes" }, { "french": "la photo", "english": "photo", "needed": "Yes" }, { "french": "la piscine", "english": "swimming pool", "needed": "Yes" }, { "french": "plusieurs", "english": "several", "needed": "Yes" }, { "french": "le poisson", "english": "fish", "needed": "Yes" }, { "french": "le/la policier/polici\u00e8re", "english": "policeman/policewoman", "needed": "Yes" }, { "french": "la politique", "english": "politics", "needed": "Yes" }, { "french": "porter", "english": "to wear", "needed": "Yes" }, { "french": "pouvoir", "english": "to be able to, can", "needed": "Yes" }, { "french": "pr\u00e9f\u00e9r\u00e9(e)", "english": "favourite", "needed": "Yes" }, { "french": "le professeur, prof", "english": "teacher", "needed": "Yes" }, { "french": "puis", "english": "then", "needed": "Yes" }, { "french": "la r\u00e9cr\u00e9(ation)", "english": "breaktime", "needed": "Yes" }, { "french": "rentrer", "english": "to go back", "needed": "Yes" }, { "french": "le restaurant", "english": "restaurant", "needed": "Yes" }, { "french": "le r\u00eave", "english": "dream", "needed": "Yes" }, { "french": "le riz", "english": "rice", "needed": "Yes" }, { "french": "la rue", "english": "street", "needed": "Yes" }, { "french": "sain(e)", "english": "healthy", "needed": "Yes" }, { "french": "le salaire", "english": "salary", "needed": "Yes" }, { "french": "(le) samedi", "english": "Saturday", "needed": "Yes" }, { "french": "les sciences (f. pl.)", "english": "sciences", "needed": "No" }, { "french": "la s\u00e9curit\u00e9", "english": "security", "needed": "Yes" }, { "french": "la semaine", "english": "week", "needed": "Yes" }, { "french": "le/la serveur/serveuse", "english": "waiter/waitress", "needed": "Yes" }, { "french": "la s\u0153ur", "english": "sister", "needed": "Yes" }, { "french": "sourire", "english": "to smile", "needed": "Yes" }, { "french": "souvent", "english": "often", "needed": "Yes" }, { "french": "le sport", "english": "sport", "needed": "No" }, { "french": "sportif/sportive", "english": "sporty", "needed": "Yes" }, { "french": "strict(e)", "english": "strict", "needed": "Yes" }, { "french": "le studio", "english": "studio", "needed": "Yes" }, { "french": "le succ\u00e8s", "english": "success", "needed": "Yes" }, { "french": "la Suisse", "english": "Switzerland", "needed": "Yes" }, { "french": "super", "english": "super", "needed": "Yes" }, { "french": "sur(e)", "english": "safe, sure, secure", "needed": "Yes" }, { "french": "sympa", "english": "nice", "needed": "Yes" }, { "french": "la technologie", "english": "DT", "needed": "No" }, { "french": "le temps", "english": "time, weather", "needed": "Yes" }, { "french": "le th\u00e9", "english": "tea", "needed": "Yes" }, { "french": "le th\u00e9\u00e2tre", "english": "drama", "needed": "No" }, { "french": "toujours", "english": "always", "needed": "Yes" }, { "french": "tous les jours", "english": "every day", "needed": "No" }, { "french": "travailler", "english": "to work", "needed": "Yes" }, { "french": "trop de", "english": "too much, many (of)", "needed": "Yes" }, { "french": "trouver", "english": "to find", "needed": "Yes" }, { "french": "le tee-shirt", "english": "T-shirt", "needed": "Yes" }, { "french": "un peu", "english": "a little", "needed": "Yes" }], "count": 186 }, { "id": "level_1", "name": "1.1F Ma personnalit\u00e9", "words": [{ "french": "acheter", "english": "to buy", "needed": "Yes" }, { "french": "alors", "english": "so, therefore", "needed": "Yes" }, { "french": "arriver", "english": "to arrive", "needed": "Yes" }, { "french": "attendre", "english": "to wait", "needed": "Yes" }, { "french": "au revoir", "english": "goodbye", "needed": "Yes" }, { "french": "aussi", "english": "also", "needed": "Yes" }, { "french": "bavard(e)", "english": "chatty", "needed": "Yes" }, { "french": "bonne chance", "english": "good luck", "needed": "Yes" }, { "french": "calme (adj.)", "english": "calm, quiet", "needed": "Yes" }, { "french": "la catastrophe", "english": "catastrophe", "needed": "Yes" }, { "french": "la cl\u00e9", "english": "key", "needed": "Yes" }, { "french": "conna\u00eetre", "english": "to know (person, place)", "needed": "Yes" }, { "french": "le copain", "english": "friend, boyfriend", "needed": "No" }, { "french": "la copine", "english": "friend, girlfriend", "needed": "No" }, { "french": "de plus", "english": "besides, moreover", "needed": "No" }, { "french": "descendre", "english": "to go down, descend, get off", "needed": "Yes" }, { "french": "devoir", "english": "to have to", "needed": "Yes" }, { "french": "dr\u00f4le", "english": "funny", "needed": "Yes" }, { "french": "emb\u00eatant(e)", "english": "annoying", "needed": "Yes" }, { "french": "en fait", "english": "in fact, in reality", "needed": "No" }, { "french": "en retard", "english": "late", "needed": "Yes" }, { "french": "entendre", "english": "to hear", "needed": "Yes" }, { "french": "fier/fi\u00e8re", "english": "proud", "needed": "Yes" }, { "french": "fort(e)", "english": "strong", "needed": "Yes" }, { "french": "gentil(le)", "english": "kind", "needed": "Yes" }, { "french": "inqui\u00e9tant(e)", "english": "worrying", "needed": "Yes" }, { "french": "intelligent(e)", "english": "intelligent", "needed": "Yes" }, { "french": "l'Internet (m.)", "english": "internet", "needed": "Yes" }, { "french": "le judo", "english": "judo", "needed": "No" }, { "french": "maintenant", "english": "now", "needed": "Yes" }, { "french": "mais", "english": "but", "needed": "Yes" }, { "french": "m\u00eame", "english": "same", "needed": "Yes" }, { "french": "la mission", "english": "mission", "needed": "No" }, { "french": "neuf/neuve", "english": "new", "needed": "Yes" }, { "french": "non", "english": "no", "needed": "Yes" }, { "french": "la note", "english": "grade, result", "needed": "Yes" }, { "french": "oui", "english": "yes", "needed": "Yes" }, { "french": "paresseux/paresseuse", "english": "lazy", "needed": "Yes" }, { "french": "partir", "english": "to leave", "needed": "Yes" }, { "french": "passionnant(e)", "english": "exciting", "needed": "Yes" }, { "french": "penser", "english": "to think", "needed": "Yes" }, { "french": "perdre", "english": "to lose", "needed": "Yes" }, { "french": "la personnalit\u00e9", "english": "personality", "needed": "Yes" }, { "french": "personne", "english": "nobody", "needed": "Yes" }, { "french": "la qualit\u00e9", "english": "quality", "needed": "Yes" }, { "french": "quand", "english": "when", "needed": "Yes" }, { "french": "que", "english": "that", "needed": "Yes" }, { "french": "quel(le)", "english": "which", "needed": "Yes" }, { "french": "qui", "english": "who, which", "needed": "Yes" }, { "french": "r\u00e9pondre", "english": "to answer", "needed": "Yes" }, { "french": "salut", "english": "hi, hello", "needed": "Yes" }, { "french": "s\u00e9rieux/s\u00e9rieuse", "english": "serious", "needed": "Yes" }, { "french": "son/sa/ses", "english": "his, her", "needed": "Yes" }, { "french": "surtout", "english": "especially", "needed": "Yes" }, { "french": "le t\u00e9l\u00e9phone", "english": "phone", "needed": "Yes" }, { "french": "timide", "english": "timid, shy", "needed": "Yes" }, { "french": "toi", "english": "you", "needed": "Yes" }, { "french": "ton/ta/tes", "english": "your", "needed": "Yes" }, { "french": "le train", "english": "train", "needed": "Yes" }, { "french": "travailleur/travailleuse", "english": "hard-working", "needed": "Yes" }, { "french": "triste", "english": "sad", "needed": "Yes" }, { "french": "trop", "english": "too much, too many", "needed": "Yes" }, { "french": "vendre", "english": "to sell", "needed": "Yes" }, { "french": "vite", "english": "quick, fast, quickly", "needed": "Yes" }, { "french": "la voiture", "english": "car", "needed": "Yes" }, { "french": "vrai", "english": "true, real", "needed": "Yes" }], "count": 66 }, { "id": "level_2", "name": "1.1H Mon futur moi", "words": [{ "french": "\u00e0 l'avenir", "english": "in the future", "needed": "No" }, { "french": "adopter", "english": "to adopt", "needed": "No" }, { "french": "aider", "english": "to help", "needed": "No" }, { "french": "appr\u00e9cier", "english": "to enjoy, appreciate, like", "needed": "No" }, { "french": "l'argent (m.)", "english": "money", "needed": "Yes" }, { "french": "l'/les association(s) (f.)", "english": "associations", "needed": "Yes" }, { "french": "aucun(e)", "english": "no, not one", "needed": "Yes" }, { "french": "les autres (m./f. pl.)", "english": "others", "needed": "Yes" }, { "french": "aujourd'hui", "english": "today", "needed": "Yes" }, { "french": "l'avocat(e) (m./f.)", "english": "lawyer", "needed": "Yes" }, { "french": "le Canada", "english": "Canada", "needed": "Yes" }, { "french": "cela", "english": "it, this, that", "needed": "No" }, { "french": "c\u00e9libataire", "english": "single", "needed": "Yes" }, { "french": "certainement", "english": "certainly", "needed": "Yes" }, { "french": "changer", "english": "to change", "needed": "Yes" }, { "french": "cher/ch\u00e8re", "english": "expensive", "needed": "Yes" }, { "french": "chercher", "english": "to research, to look for", "needed": "Yes" }, { "french": "la comp\u00e9tence", "english": "skill", "needed": "Yes" }, { "french": "la connaissance", "english": "knowledge", "needed": "Yes" }, { "french": "la course", "english": "race", "needed": "Yes" }, { "french": "co\u00fbter", "english": "to cost", "needed": "Yes" }, { "french": "la culture", "english": "culture", "needed": "Yes" }, { "french": "demain", "english": "tomorrow", "needed": "Yes" }, { "french": "d\u00e9velopper", "english": "to develop", "needed": "Yes" }, { "french": "donner", "english": "to give", "needed": "Yes" }, { "french": "dur(e)", "english": "hard", "needed": "Yes" }, { "french": "l'employeur/employeuse (m./f.)", "english": "employer", "needed": "No" }, { "french": "entrer", "english": "to enter", "needed": "Yea" }, { "french": "l'Espagne (f.)", "english": "Spain", "needed": "Yes" }, { "french": "essayer", "english": "to try", "needed": "Yes" }, { "french": "excellent(e)", "english": "excellent", "needed": "Yes" }, { "french": "faire du jardinage", "english": "to garden", "needed": "No" }, { "french": "le futur (n.)", "english": "future", "needed": "No" }, { "french": "futur(e) (adj.)", "english": "future", "needed": "No" }, { "french": "garder", "english": "to keep", "needed": "Yes" }, { "french": "l'h\u00f4pital (m.)", "english": "hospital", "needed": "Yes" }, { "french": "id\u00e9al(e)", "english": "ideal", "needed": "Yes" }, { "french": "l'importance (f.)", "english": "importance", "needed": "Yes" }, { "french": "l'instrument (m.)", "english": "instrument", "needed": "Yes" }, { "french": "interculturel(le)", "english": "intercultural", "needed": "No" }, { "french": "le mariage", "english": "marriage", "needed": "Yes" }, { "french": "se marier", "english": "to marry", "needed": "Yes" }, { "french": "la mer", "english": "sea", "needed": "Yes" }, { "french": "mieux", "english": "better", "needed": "Yes" }, { "french": "le monde", "english": "people, world", "needed": "Yes" }, { "french": "la Normandie", "english": "Normandy", "needed": "Yes" }, { "french": "notre/nos", "english": "our", "needed": "Yes" }, { "french": "le PACS", "english": "civil partnership", "needed": "No" }, { "french": "le parc", "english": "park", "needed": "Yes" }, { "french": "le/la partenaire", "english": "partner", "needed": "No" }, { "french": "partout", "english": "everywhere", "needed": "Yes" }, { "french": "passer du temps", "english": "to spend time", "needed": "No" }, { "french": "le passe-temps", "english": "hobby, past time", "needed": "Yes" }, { "french": "le pays", "english": "country", "needed": "Yes" }, { "french": "le pilote", "english": "pilot", "needed": "Yes" }, { "french": "plus", "english": "more", "needed": "Yes" }, { "french": "pourquoi", "english": "why", "needed": "Yes" }, { "french": "pr\u00e9f\u00e9rer", "english": "to prefer", "needed": "Yes" }, { "french": "pr\u00e8s (de)", "english": "near, next to", "needed": "Yes" }, { "french": "probablement", "english": "probably", "needed": "Yes" }, { "french": "le probl\u00e8me", "english": "problem", "needed": "Yes" }, { "french": "la question", "english": "question", "needed": "Yes" }, { "french": "quitter", "english": "to leave", "needed": "Yes" }, { "french": "rencontrer", "english": "to meet", "needed": "Yes" }, { "french": "rester", "english": "to stay", "needed": "Yes" }, { "french": "le souci", "english": "worry", "needed": "Yes" }, { "french": "souhaiter", "english": "to wish", "needed": "Yes" }, { "french": "traditionnel(le)", "english": "traditional", "needed": "Yes" }, { "french": "le type", "english": "type", "needed": "Yes" }, { "french": "la vie", "english": "life", "needed": "Yes" }], "count": 70 }, { "id": "level_3", "name": "1.2F Les familles de nos jours", "words": [{ "french": "\u00e0", "english": "at, to", "needed": "Yes" }, { "french": "adopt\u00e9(e)", "english": "adopted", "needed": "No" }, { "french": "aussi... que", "english": "as... as", "needed": "Yes" }, { "french": "canadien(ne)", "english": "Canadian", "needed": "Yes" }, { "french": "chez moi", "english": "at my place, at mine", "needed": "Yes" }, { "french": "choisir", "english": "to choose", "needed": "Yes" }, { "french": "la chose", "english": "thing", "needed": "Yes" }, { "french": "le cin\u00e9ma", "english": "cinema", "needed": "Yes" }, { "french": "comprendre", "english": "to understand", "needed": "Yes" }, { "french": "la C\u00f4te d'Ivoire", "english": "Ivory Coast", "needed": "Yes" }, { "french": "les courses (f. pl.)", "english": "(grocery) shopping", "needed": "Yes" }, { "french": "le d\u00e9jeuner", "english": "lunch", "needed": "Yes" }, { "french": "le demi-fr\u00e8re", "english": "half-brother", "needed": "No" }, { "french": "la demi-soeur", "english": "half-sister", "needed": "No" }, { "french": "les devoirs (m. pl.)", "english": "homework", "needed": "Yes" }, { "french": "(le) dimanche", "english": "Sunday", "needed": "Yes" }, { "french": "\u00e9couter", "english": "to listen (to)", "needed": "Yes" }, { "french": "l'\u00e9mission (f.)", "english": "program", "needed": "Yes" }, { "french": "encore", "english": "again, still", "needed": "Yes" }, { "french": "finir", "english": "to finish", "needed": "Yes" }, { "french": "le frigo", "english": "fridge", "needed": "No" }, { "french": "grandir", "english": "to grow (up)", "needed": "No" }, { "french": "le jeu", "english": "game", "needed": "Yes" }, { "french": "le jeu vid\u00e9o", "english": "video game", "needed": "Yes" }, { "french": "l\u00e0-bas", "english": "over there", "needed": "No" }, { "french": "la lecture", "english": "reading", "needed": "Yes" }, { "french": "meilleur(e)", "english": "better than", "needed": "Yes" }, { "french": "moins... que", "english": "less than", "needed": "Yes" }, { "french": "le mois", "english": "month", "needed": "Yes" }, { "french": "n\u00e9(e)", "english": "born", "needed": "Yes" }, { "french": "No\u00ebl", "english": "Christmas", "needed": "Yes" }, { "french": "normalement", "english": "normally", "needed": "Yes" }, { "french": "nous", "english": "we", "needed": "Yes" }, { "french": "le/les parent(s) (m. pl.)", "english": "parent(s)", "needed": "Yes" }, { "french": "Paris", "english": "Paris", "needed": "Yes" }, { "french": "pire que", "english": "worse than", "needed": "Yes" }, { "french": "la plage", "english": "beach", "needed": "Yes" }, { "french": "plus... que", "english": "more than", "needed": "Yes" }, { "french": "pour", "english": "for", "needed": "Yes" }, { "french": "regarder", "english": "to look, to watch", "needed": "Yes" }, { "french": "remplir", "english": "to fill up", "needed": "No" }, { "french": "r\u00e9unir", "english": "to gather", "needed": "No" }, { "french": "r\u00e9ussir", "english": "to succeed", "needed": "Yes" }, { "french": "rire", "english": "to laugh", "needed": "Yes" }, { "french": "le sac", "english": "bag", "needed": "Yes" }, { "french": "s\u00e9par\u00e9(e)", "english": "separated", "needed": "No" }, { "french": "septembre", "english": "September", "needed": "Yes" }, { "french": "la t\u00e9l\u00e9", "english": "television", "needed": "Yes" }, { "french": "tous", "english": "all, every", "needed": "Yes" }], "count": 49 }, { "id": "level_4", "name": "1.2H Mes amis, c'est ma vie!", "words": [{ "french": "\u00e0 l'heure", "english": "on time", "needed": "Yes" }, { "french": "appeler", "english": "to call", "needed": "Yes" }, { "french": "arr\u00eater", "english": "to stop", "needed": "Yes" }, { "french": "la boisson", "english": "drink", "needed": "Yes" }, { "french": "la boulangerie", "english": "bakery", "needed": "Yes" }, { "french": "le bus", "english": "bus", "needed": "Yes" }, { "french": "la confiance", "english": "trust, confidence", "needed": "Yes" }, { "french": "la conversation", "english": "conversation", "needed": "Yes" }, { "french": "cool", "english": "cool", "needed": "No" }, { "french": "la couverture", "english": "rug, duvet", "needed": "No" }, { "french": "croire", "english": "to believe", "needed": "Yes" }, { "french": "la cuisine", "english": "cooking, kitchen", "needed": "Yes" }, { "french": "d'abord", "english": "firstly, first of all", "needed": "Yes" }, { "french": "la d\u00e9cision", "english": "decision", "needed": "Yes" }, { "french": "le d\u00eener", "english": "dinner", "needed": "Yes" }, { "french": "encourager", "english": "to encourage", "needed": "Yes" }, { "french": "entre", "english": "between", "needed": "Yes" }, { "french": "gagner du temps", "english": "to save time", "needed": "No" }, { "french": "la gymnastique", "english": "gymnastics", "needed": "No" }, { "french": "l'id\u00e9e (f.)", "english": "idea", "needed": "Yes" }, { "french": "il faut", "english": "it is necessary to, must", "needed": "Yes" }, { "french": "il vaut la peine de", "english": "it is worth", "needed": "No" }, { "french": "il vaut mieux", "english": "it is worth", "needed": "No" }, { "french": "la journ\u00e9e", "english": "day", "needed": "Yes" }, { "french": "juste", "english": "fair, just, only", "needed": "Yes" }, { "french": "longtemps", "english": "long time", "needed": "Yes" }, { "french": "manquer", "english": "to miss, lack", "needed": "Yes" }, { "french": "mentir", "english": "to lie", "needed": "Yes" }, { "french": "la montagne", "english": "mountain", "needed": "Yes" }, { "french": "le num\u00e9ro", "english": "number", "needed": "Yes" }, { "french": "patient(e)", "english": "patient", "needed": "Yes" }, { "french": "le pique-nique", "english": "picnic", "needed": "Yes" }, { "french": "la plupart (de)", "english": "most (of)", "needed": "No" }, { "french": "pr\u00e9parer", "english": "to prepare", "needed": "Yes" }, { "french": "proche", "english": "close", "needed": "Yes" }, { "french": "la promesse", "english": "promise", "needed": "No" }, { "french": "quoi", "english": "what", "needed": "Yes" }, { "french": "rendez-vous", "english": "rendez-vous, meeting, appointment", "needed": "Yes" }, { "french": "le retour", "english": "return", "needed": "Yes" }, { "french": "sensible", "english": "sensitive", "needed": "Yes" }, { "french": "seul(e)", "english": "alone", "needed": "Yes" }, { "french": "le supermarch\u00e9", "english": "supermarket", "needed": "Yes" }, { "french": "tenir", "english": "to hold", "needed": "Yes" }, { "french": "voir", "english": "to see", "needed": "Yes" }], "count": 44 }, { "id": "level_5", "name": "2.1F A\u00efe a\u00efe a\u00efe!", "words": [{ "french": "\u00e0 l'\u00e2ge de", "english": "at the age of", "needed": "No" }, { "french": "l'accident (m.)", "english": "accident", "needed": "Yes" }, { "french": "l'alcool (m.)", "english": "alcohol", "needed": "Yes" }, { "french": "avoir mal", "english": "to hurt", "needed": "Yes" }, { "french": "avoir peur", "english": "to be scared", "needed": "No" }, { "french": "la bouche", "english": "mouth", "needed": "Yes" }, { "french": "le bras", "english": "arm", "needed": "Yes" }, { "french": "le ch\u00e2teau", "english": "castle", "needed": "Yes" }, { "french": "le choix", "english": "choice", "needed": "Yes" }, { "french": "la cigarette", "english": "cigarette", "needed": "Yes" }, { "french": "commencer", "english": "to start", "needed": "Yes" }, { "french": "le corps", "english": "body", "needed": "Yes" }, { "french": "d'accord", "english": "okay, agreed", "needed": "Yes" }, { "french": "la dame", "english": "lady", "needed": "Yes" }, { "french": "le danger", "english": "danger", "needed": "Yes" }, { "french": "dangereux/dangereuse", "english": "dangerous", "needed": "Yes" }, { "french": "dire", "english": "say, tell", "needed": "Yes" }, { "french": "le dos", "english": "back", "needed": "Yes" }, { "french": "la drogue", "english": "drug", "needed": "Yes" }, { "french": "l'effort (m.)", "english": "effort", "needed": "No" }, { "french": "envoyer", "english": "to send", "needed": "Yes" }, { "french": "examiner", "english": "to examine", "needed": "No" }, { "french": "l'exercice (m.)", "english": "exercise", "needed": "Yes" }, { "french": "la fa\u00e7on", "english": "way", "needed": "Yes" }, { "french": "fatigu\u00e9(e)", "english": "tired", "needed": "Yes" }, { "french": "fumer", "english": "to smoke", "needed": "Yes" }, { "french": "la gorge", "english": "throat", "needed": "No" }, { "french": "imm\u00e9diatement", "english": "immediately", "needed": "No" }, { "french": "inquiet/inqui\u00e8te", "english": "worried", "needed": "Yes" }, { "french": "la jambe", "english": "leg", "needed": "Yes" }, { "french": "lever", "english": "to raise", "needed": "No" }, { "french": "le lieu", "english": "place", "needed": "No" }, { "french": "le lit", "english": "bed", "needed": "Yes" }, { "french": "le mal", "english": "ache", "needed": "No" }, { "french": "malade", "english": "ill", "needed": "Yes" }, { "french": "mauvais", "english": "bad", "needed": "Yes" }, { "french": "le m\u00e9decin", "english": "doctor", "needed": "Yes" }, { "french": "le m\u00e9dicament", "english": "medication", "needed": "No" }, { "french": "l'oreille (f.)", "english": "ear", "needed": "No" }, { "french": "peut-\u00eatre", "english": "maybe", "needed": "Yes" }, { "french": "le pied", "english": "foot", "needed": "Yes" }, { "french": "se relaxer", "english": "to relax", "needed": "No" }, { "french": "la sant\u00e9", "english": "health", "needed": "Yes" }, { "french": "savoir", "english": "to know", "needed": "Yes" }, { "french": "la t\u00eate", "english": "head", "needed": "Yes" }, { "french": "tomber", "english": "to fall", "needed": "Yes" }, { "french": "tuer", "english": "to kill", "needed": "Yes" }, { "french": "l'urgence (f.)", "english": "emergency", "needed": "No" }, { "french": "vapoter", "english": "to vape", "needed": "No" }], "count": 49 }, { "id": "level_6", "name": "2.1H Mes projets >", "words": [{ "french": "actuellement", "english": "currently", "needed": "No" }, { "french": "l'ann\u00e9e (f.)", "english": "year", "needed": "Yes" }, { "french": "avant de", "english": "before", "needed": "Yes" }, { "french": "certain(e)(s)", "english": "some, certain", "needed": "Yes" }, { "french": "le chapeau", "english": "hat", "needed": "Yes" }, { "french": "chaud(e)", "english": "hot, warm", "needed": "Yes" }, { "french": "se concentrer", "english": "to concentrate, focus", "needed": "No" }, { "french": "le concours", "english": "competition", "needed": "No" }, { "french": "d\u00e9pendre de", "english": "to depend on", "needed": "No" }, { "french": "en ce moment", "english": "at the moment", "needed": "No" }, { "french": "enfin", "english": "finally", "needed": "Yes" }, { "french": "\u00e9videmment", "english": "evidently, obviously", "needed": "No" }, { "french": "faible", "english": "weak", "needed": "Yes" }, { "french": "la for\u00eat", "english": "forest, wood", "needed": "Yes" }, { "french": "g\u00e9rer", "english": "to organise", "needed": "No" }, { "french": "l'\u00e9t\u00e9 (m.)", "english": "summer", "needed": "Yes" }, { "french": "se lever", "english": "to get up", "needed": "Yes" }, { "french": "marcher", "english": "to walk", "needed": "Yes" }, { "french": "mener", "english": "to lead", "needed": "No" }, { "french": "merci", "english": "thank you", "needed": "Yes" }, { "french": "nager", "english": "to swim", "needed": "Yes" }, { "french": "la nature", "english": "nature", "needed": "Yes" }, { "french": "obliger", "english": "to obligate", "needed": "No" }, { "french": "parler", "english": "to speak, chat, talk", "needed": "Yes" }, { "french": "participer", "english": "to participate, contribute, take part", "needed": "No" }, { "french": "passer les examens", "english": "to take exams", "needed": "No" }, { "french": "le plat", "english": "dish", "needed": "Yes" }, { "french": "prochain(e)", "english": "next", "needed": "Yes" }, { "french": "la promenade", "english": "walk", "needed": "Yes" }, { "french": "le repas", "english": "meal", "needed": "Yes" }, { "french": "risquer", "english": "to risk", "needed": "No" }, { "french": "se sentir", "english": "to feel", "needed": "Yes" }, { "french": "le soleil", "english": "sun", "needed": "Yes" }, { "french": "le traitement", "english": "treatment", "needed": "No" }], "count": 34 }, { "id": "level_7", "name": "2.2F Hier j'ai...", "words": [{ "french": "l'anniversaire (m.)", "english": "birthday", "needed": "Yes" }, { "french": "le bain", "english": "bath", "needed": "No" }, { "french": "le cadeau", "english": "present", "needed": "Yes" }, { "french": "le chien", "english": "dog", "needed": "Yes" }, { "french": "demander", "english": "to ask", "needed": "Yes" }, { "french": "... fois", "english": "... time, times", "needed": "Yes" }, { "french": "hier", "english": "yesterday", "needed": "Yes" }, { "french": "(le) jeudi", "english": "Thursday", "needed": "Yes" }, { "french": "lui", "english": "(to) him, (to) her", "needed": "Yes" }, { "french": "(le) lundi", "english": "Monday", "needed": "Yes" }, { "french": "le match", "english": "match", "needed": "Yes" }, { "french": "(le) mercredi", "english": "Wednesday", "needed": "Yes" }, { "french": "la nourriture", "english": "food", "needed": "Yes" }, { "french": "la nuit", "english": "night", "needed": "Yes" }, { "french": "le portable", "english": "mobile phone", "needed": "Yes" }, { "french": "le/la premier/premi\u00e8re", "english": "first", "needed": "Yes" }, { "french": "le programme", "english": "schedule", "needed": "No" }, { "french": "ressembler", "english": "to look like", "needed": "No" }, { "french": "le surf", "english": "surf", "needed": "No" }, { "french": "te/t'", "english": "(to) you", "needed": "Yes" }, { "french": "le Tour de France", "english": "Tour de France", "needed": "No" }, { "french": "la partie (de foot)", "english": "(football) match, game", "needed": "No" }, { "french": "vous", "english": "you (polite, plural)", "needed": "Yes" }], "count": 23 }, { "id": "level_8", "name": "2.2H Comment rester en bonne sant\u00e9?", "words": [{ "french": "am\u00e9liorer", "english": "to improve", "needed": "No" }, { "french": "assis(e)", "english": "sat", "needed": "No" }, { "french": "b\u00e9n\u00e9ficier", "english": "to benefit", "needed": "No" }, { "french": "le bureau", "english": "office, desk", "needed": "Yes" }, { "french": "\u00e7a me rend", "english": "it makes me", "needed": "No" }, { "french": "conscient(e)", "english": "conscious", "needed": "No" }, { "french": "conseiller", "english": "to advise", "needed": "No" }, { "french": "continuer", "english": "to continue", "needed": "Yes" }, { "french": "courir", "english": "to run", "needed": "Yes" }, { "french": "de nos jours", "english": "nowadays", "needed": "No" }, { "french": "de saison", "english": "seasonal", "needed": "No" }, { "french": "le d\u00e9bat", "english": "debate", "needed": "No" }, { "french": "d\u00e9pendant", "english": "dependent, addicted", "needed": "No" }, { "french": "\u00e9galement", "english": "equally", "needed": "No" }, { "french": "l'esprit (m.)", "english": "spirit", "needed": "No" }, { "french": "essentiel(le)", "english": "essential", "needed": "Yes" }, { "french": "l'\u00e9tude (f.)", "english": "study", "needed": "No" }, { "french": "eux", "english": "them", "needed": "Yes" }, { "french": "l'exemple (m.)", "english": "example", "needed": "Yes" }, { "french": "l'expert(e) (m./f.)", "english": "expert", "needed": "No" }, { "french": "l'explication (f.)", "english": "explanation", "needed": "No" }, { "french": "facilement", "english": "easily", "needed": "Yes" }, { "french": "frais/fra\u00eeche", "english": "fresh", "needed": "Yes" }, { "french": "la force", "english": "strength", "needed": "No" }, { "french": "les gens (m. pl.)", "english": "people", "needed": "Yes" }, { "french": "grave", "english": "serious", "needed": "Yes" }, { "french": "ici", "english": "here", "needed": "Yes" }, { "french": "interdit", "english": "forbidden", "needed": "Yes" }, { "french": "la majorit\u00e9", "english": "majority", "needed": "No" }, { "french": "n\u00e9cessaire", "english": "necessary", "needed": "Yes" }, { "french": "occidental(e)", "english": "western", "needed": "No" }, { "french": "ouvert(e)", "english": "open", "needed": "Yes" }, { "french": "parmi", "english": "among", "needed": "No" }, { "french": "plut\u00f4t", "english": "rather, quite", "needed": "Yes" }], "count": 34 }, { "id": "level_9", "name": "3.1F Lyc\u00e9e et universit\u00e9?", "words": [{ "french": "apprendre", "english": "to learn", "needed": "Yes" }, { "french": "bien s\u00fbr", "english": "of course", "needed": "Yes" }, { "french": "le bureau", "english": "desk, office", "needed": "Yes" }, { "french": "la classe", "english": "class, classroom", "needed": "Yes" }, { "french": "la communication", "english": "communication", "needed": "Yes" }, { "french": "l'environnement (m.)", "english": "environment", "needed": "Yes" }, { "french": "\u00e9tudier", "english": "to study", "needed": "Yes" }, { "french": "ind\u00e9pendant (e)", "english": "independent", "needed": "Yes" }, { "french": "l'information (f.)", "english": "information", "needed": "Yes" }, { "french": "int\u00e9resser", "english": "to interest", "needed": "No" }, { "french": "la langue", "english": "language", "needed": "Yes" }, { "french": "le lyc\u00e9e", "english": "school, sixth form", "needed": "Yes" }, { "french": "la mati\u00e8re", "english": "subject", "needed": "Yes" }, { "french": "la m\u00e9decine", "english": "medicine", "needed": "No" }, { "french": "nouveau/nouvelle", "english": "new", "needed": "Yes" }, { "french": "l'organisation (f.)", "english": "organisation", "needed": "Yes" }, { "french": "l'organisation caritative (f.)", "english": "charity", "needed": "No" }, { "french": "organis\u00e9(e)", "english": "organised", "needed": "No" }, { "french": "la participation", "english": "contribution", "needed": "No" }, { "french": "la passion", "english": "passion", "needed": "No" }, { "french": "progresser", "english": "to progress", "needed": "No" }, { "french": "la situation", "english": "situation", "needed": "Yes" }, { "french": "situer", "english": "to locate", "needed": "No" }, { "french": "l'universit\u00e9 (f.)", "english": "university", "needed": "Yes" }], "count": 24 }, { "id": "level_10", "name": "3.1H L'\u00e9cole de mes r\u00eaves", "words": [{ "french": "\u00e0 mon avis", "english": "in my opinion", "needed": "No" }, { "french": "accepter", "english": "to accept, authorise", "needed": "No" }, { "french": "aimer", "english": "to like", "needed": "Yes" }, { "french": "la cantine", "english": "canteen", "needed": "No" }, { "french": "le chewing-gum", "english": "chewing-gum", "needed": "No" }, { "french": "le cyber intimidation", "english": "cyber bullying", "needed": "No" }, { "french": "l'\u00e9l\u00e8ve (m.)", "english": "pupil", "needed": "No" }, { "french": "et demie", "english": "half past", "needed": "No" }, { "french": "grand(e)", "english": "big", "needed": "Yes" }, { "french": "le gymnase", "english": "gymnasium", "needed": "No" }, { "french": "interdire", "english": "to forbid, ban", "needed": "No" }, { "french": "le/la/les meilleur(e)(s)", "english": "the best", "needed": "Yes" }, { "french": "normal(e)", "english": "normal", "needed": "Yes" }, { "french": "pendant", "english": "during", "needed": "Yes" }, { "french": "le/la/les pire(s)", "english": "the worst", "needed": "Yes" }, { "french": "plein (de)", "english": "lots (of)", "needed": "No" }, { "french": "plus tard", "english": "later", "needed": "Yes" }, { "french": "la r\u00e9gion", "english": "region", "needed": "Yes" }, { "french": "le r\u00e8glement", "english": "regulation, rule", "needed": "No" }, { "french": "retourner", "english": "to go back", "needed": "Yes" }, { "french": "tellement", "english": "so", "needed": "No" }, { "french": "la salle informatique", "english": "IT room", "needed": "No" }, { "french": "scolaire", "english": "school", "needed": "No" }, { "french": "les v\u00eatements (m. pl.)", "english": "clothes", "needed": "Yes" }], "count": 24 }, { "id": "level_11", "name": "3.2F Mon m\u00e9tier cr\u00e9atif", "words": [{ "french": "l'animal (m.)", "english": "animal", "needed": "Yes" }, { "french": "l'auteur/autrice (m./f.)", "english": "author", "needed": "No" }, { "french": "la carri\u00e8re", "english": "career", "needed": "No" }, { "french": "chanter", "english": "to sing", "needed": "Yes" }, { "french": "chaque", "english": "each, every", "needed": "Yes" }, { "french": "la comp\u00e9tition", "english": "competition", "needed": "No" }, { "french": "connu(e)", "english": "famous, known", "needed": "Yes" }, { "french": "l'Europe (f.)", "english": "Europe", "needed": "No" }, { "french": "l'exp\u00e9rience (f.)", "english": "experience", "needed": "No" }, { "french": "le festival", "english": "festival", "needed": "No" }, { "french": "l'heroine (f.)", "english": "(female) hero", "needed": "No" }, { "french": "l'h\u00e9ros (m.)", "english": "(male) hero", "needed": "No" }, { "french": "historique", "english": "historic", "needed": "No" }, { "french": "l'influenceur/influenceuse", "english": "influencer", "needed": "No" }, { "french": "local(e)(s)/locaux", "english": "local", "needed": "No" }, { "french": "mai", "english": "May", "needed": "Yes" }, { "french": "montrer", "english": "to show", "needed": "Yes" }, { "french": "le/la musicien(enne)", "english": "musician", "needed": "No" }, { "french": "le quartier", "english": "neighbourhood", "needed": "No" }, { "french": "quelques", "english": "some, several", "needed": "Yes" }, { "french": "le roman", "english": "novel", "needed": "No" }, { "french": "la soir\u00e9e", "english": "evening", "needed": "Yes" }, { "french": "le th\u00e8me", "english": "theme", "needed": "No" }], "count": 23 }, { "id": "level_12", "name": "3.2H Mon stage en entreprise", "words": [{ "french": "l'Angleterre (f.)", "english": "England", "needed": "No" }, { "french": "l'assembl\u00e9e (f.)", "english": "assembly", "needed": "No" }, { "french": "avant", "english": "before", "needed": "Yes" }, { "french": "avoir besoin de", "english": "to need", "needed": "No" }, { "french": "la banque", "english": "bank", "needed": "No" }, { "french": "le b\u00e2timent", "english": "building", "needed": "No" }, { "french": "la brochure", "english": "brochure", "needed": "No" }, { "french": "la campagne", "english": "countryside", "needed": "Yes" }, { "french": "le champ", "english": "field", "needed": "Yes" }, { "french": "le/la coll\u00e8gue", "english": "colleague", "needed": "No" }, { "french": "construire", "english": "to build", "needed": "No" }, { "french": "dehors", "english": "outside", "needed": "No" }, { "french": "le d\u00e9pliant", "english": "leaflet", "needed": "No" }, { "french": "le/la d\u00e9put\u00e9(e)", "english": "deputy, MP", "needed": "No" }, { "french": "la discussion", "english": "discussion", "needed": "No" }, { "french": "le document", "english": "document", "needed": "No" }, { "french": "l'enqu\u00eate (f.)", "english": "survey", "needed": "No" }, { "french": "l'entreprise (f.)", "english": "company", "needed": "No" }, { "french": "\u00eatre en train de", "english": "to be in the middle of", "needed": "No" }, { "french": "expliquer", "english": "to explain", "needed": "No" }, { "french": "la feuille", "english": "piece of paper, leaf", "needed": "No" }, { "french": "froid(e)", "english": "cold", "needed": "Yes" }, { "french": "la gr\u00e8ve", "english": "strike", "needed": "No" }, { "french": "il y a", "english": "there is", "needed": "Yes" }, { "french": "le journal", "english": "newspaper, diary", "needed": "Yes" }, { "french": "la loi", "english": "law", "needed": "No" }, { "french": "le magasin", "english": "shop", "needed": "Yes" }, { "french": "le ministre", "english": "minister", "needed": "No" }, { "french": "le palais", "english": "palace", "needed": "No" }, { "french": "le parlement", "english": "parliament", "needed": "No" }, { "french": "la possibilit\u00e9", "english": "possibility", "needed": "No" }, { "french": "le poste", "english": "post office", "needed": "Yes" }, { "french": "pratiquer", "english": "to practice", "needed": "No" }, { "french": "la r\u00e9ception", "english": "reception", "needed": "No" }, { "french": "la responsabilit\u00e9", "english": "responsibility", "needed": "No" }, { "french": "retirer", "english": "to withdraw", "needed": "No" }, { "french": "la r\u00e9union", "english": "meeting", "needed": "No" }, { "french": "le r\u00f4le", "english": "role", "needed": "No" }, { "french": "le/la secr\u00e9taire", "english": "secretary", "needed": "No" }, { "french": "le stage (en entreprise)", "english": "work experience", "needed": "No" }, { "french": "le touriste", "english": "tourist", "needed": "Yes" }, { "french": "venir de", "english": "to have just (done something)", "needed": "No" }, { "french": "la visite", "english": "visit", "needed": "Yes" }, { "french": "voter", "english": "to vote", "needed": "No" }], "count": 44 }, { "id": "level_13", "name": "Culture", "words": [{ "french": "\u00e0 c\u00f4t\u00e9 de", "english": "near", "needed": "Yes" }, { "french": "l'abbaye (f.)", "english": "abbey", "needed": "No" }, { "french": "l'Afrique (f.)", "english": "Africa", "needed": "No" }, { "french": "Allah", "english": "Allah", "needed": "No" }, { "french": "allumer", "english": "to switch on, to light", "needed": "No" }, { "french": "l'ambiance (f.)", "english": "ambiance", "needed": "No" }, { "french": "l'atmosphere (f.)", "english": "atmosphere", "needed": "No" }, { "french": "autre", "english": "other", "needed": "Yes" }, { "french": "la b\u00e9n\u00e9diction", "english": "blessing", "needed": "No" }, { "french": "la bougie", "english": "candle", "needed": "No" }, { "french": "catholique", "english": "Catholic", "needed": "No" }, { "french": "ce que", "english": "which", "needed": "Yes" }, { "french": "ce/cet/cette/ces", "english": "this, these", "needed": "Yes" }, { "french": "la chance", "english": "luck, opportunity", "needed": "Yes" }, { "french": "la dynastie", "english": "dynasty", "needed": "No" }, { "french": "l'\u00e9motion (f.)", "english": "emotion", "needed": "No" }, { "french": "\u00e9mouvant(e)", "english": "moving", "needed": "No" }, { "french": "la grotte", "english": "grotto, cave", "needed": "No" }, { "french": "le Hajj", "english": "Hajj", "needed": "No" }, { "french": "handicap\u00e9(e)", "english": "handicapped", "needed": "No" }, { "french": "islamique", "english": "Islamic", "needed": "No" }, { "french": "le jour", "english": "day", "needed": "Yes" }, { "french": "le magasin", "english": "shop", "needed": "Yes" }, { "french": "le Maroc", "english": "Morocco", "needed": "No" }, { "french": "la Mecque", "english": "Mecca", "needed": "No" }, { "french": "la messe", "english": "Mass", "needed": "No" }, { "french": "le million", "english": "million", "needed": "Yes" }, { "french": "musulman(e)", "english": "Muslim", "needed": "No" }, { "french": "le nord", "english": "north", "needed": "Yes" }, { "french": "la pagode", "english": "pagoda", "needed": "No" }, { "french": "partager", "english": "to share", "needed": "Yes" }, { "french": "pauvre", "english": "poor", "needed": "Yes" }, { "french": "le/la p\u00e8lerin(e)", "english": "pilgrim", "needed": "No" }, { "french": "le p\u00e8lerinage", "english": "pilgrimage", "needed": "No" }, { "french": "la population", "english": "population", "needed": "No" }, { "french": "prier", "english": "to pray", "needed": "No" }, { "french": "proposer", "english": "to offer, to propose", "needed": "No" }, { "french": "la queue", "english": "queue", "needed": "No" }, { "french": "raconter", "english": "to tell, to relay a story", "needed": "No" }, { "french": "religieux/religieuse", "english": "religious", "needed": "No" }, { "french": "sacr\u00e9(e)", "english": "sacred", "needed": "No" }, { "french": "le site", "english": "site", "needed": "Yes" }, { "french": "six", "english": "six", "needed": "Yes" }, { "french": "le souvenir", "english": "souvenir", "needed": "No" }, { "french": "spirituel(le)", "english": "spiritual", "needed": "No" }, { "french": "la statue", "english": "statue", "needed": "No" }, { "french": "le tombeau", "english": "tomb", "needed": "No" }, { "french": "toucher", "english": "to touch", "needed": "No" }, { "french": "tr\u00e8s", "english": "very", "needed": "Yes" }, { "french": "venir", "english": "to come", "needed": "Yes" }, { "french": "la vierge", "english": "virgin", "needed": "No" }, { "french": "visiter", "english": "to visit (place)", "needed": "Yes" }, { "french": "vouloir dire", "english": "to mean", "needed": "No" }, { "french": "le voyage", "english": "journey", "needed": "Yes" }, { "french": "y", "english": "there", "needed": "Yes" }], "count": 55 }];
+
+        // STATE
+        let mode = 'en_fr'; // or 'fr_en'
+        let currentLevel = null;
+        let queue = [];
+        let currentIdx = 0;
+        let score = 0;
+        let lives = 3;
+        let gameState = 'ready'; // ready, answered
+        let audioText = ""; // Text to speak
+        let bonusAudioText = "";
+
+        // ELEMENT REFS
+        const elGrid = document.getElementById('grid');
+        const elGame = document.getElementById('screen-game');
+        const elLevels = document.getElementById('screen-levels');
+        const elResult = document.getElementById('screen-result');
+        const elInput = document.getElementById('inp');
+        const elFeedback = document.getElementById('feedback');
+        const elAction = document.getElementById('btn-action');
+        const elAudioBtn = document.getElementById('btn-audio');
+        // Bonus Refs
+        const elBonusBox = document.getElementById('bonus-box');
+        const elBonusFr = document.getElementById('bonus-fr');
+        const elBonusEn = document.getElementById('bonus-en');
+
+        // INIT
+        window.onload = () => {
+            renderLevels();
+            initVoices();
+        };
+
+        function initVoices() {
+            // Force load voices
+            window.speechSynthesis.getVoices();
+        }
+
+        function toggleMode() {
+            if (mode === 'en_fr') {
+                mode = 'fr_en';
+                document.getElementById('flag-src').innerText = '🇫🇷';
+                document.getElementById('flag-dest').innerText = '🇺🇸';
+            } else {
+                mode = 'en_fr';
+                document.getElementById('flag-src').innerText = '🇺🇸';
+                document.getElementById('flag-dest').innerText = '🇫🇷';
+            }
+            // Save pref?
+        }
+
+        function renderLevels() {
+            elGrid.innerHTML = '';
+            DATA.forEach((L, i) => {
+                const d = document.createElement('div');
+                d.className = 'level-card';
+                d.onclick = () => startGame(i);
+
+                const saved = localStorage.getItem(`score_${i}_${mode}`);
+                const badge = saved ? `<span>${saved}</span>` : '<span>PLAY</span>';
+
+                d.innerHTML = `
+                <div class="level-info"><h3>${L.name}</h3><span>${L.count} words</span></div>
+                <div class="level-score">${badge}</div>
+            `;
+                elGrid.appendChild(d);
+            });
+        }
+
+        function startGame(idx) {
+            currentLevel = DATA[idx];
+            // Shuffle & Slice
+            let all = [...currentLevel.words].sort(() => Math.random() - .5);
+            queue = all.slice(0, 15); // max 15 per round
+
+            currentIdx = 0; lives = 3; gameState = 'ready';
+
+            elLevels.classList.add('hidden');
+            elGame.classList.remove('hidden');
+            elResult.classList.add('hidden');
+
+            loadCard();
+        }
+
+        function loadCard() {
+            gameState = 'ready';
+            const item = queue[currentIdx];
+
+            elInput.value = '';
+            elInput.className = '';
+            elInput.disabled = false;
+            elInput.focus();
+            elFeedback.innerText = '';
+            elBonusBox.style.display = 'none';
+            elAction.innerText = 'CHECK';
+
+            // Mode Logic
+            if (mode === 'en_fr') {
+                // ENGLISH -> FRENCH
+                document.getElementById('q-label').innerText = "TRANSLATE TO FRENCH";
+                document.getElementById('q-text').innerText = item.english;
+                document.getElementById('accent-bar').style.display = 'flex';
+
+                // Audio button hidden during guessing? 
+                // Better: plays prompts? No prompt is English.
+                // Target is French. Playing it reveals answer. Hide until answered.
+                elAudioBtn.style.visibility = 'hidden';
+                audioText = item.french; // store for later
+
+            } else {
+                // FRENCH -> ENGLISH
+                document.getElementById('q-label').innerText = "TRANSLATE TO ENGLISH";
+                document.getElementById('q-text').innerText = item.french;
+                document.getElementById('accent-bar').style.display = 'none'; // No accents needed for English input
+
+                // Audio visible immediately to help pronunciation
+                elAudioBtn.style.visibility = 'visible';
+                audioText = item.french;
+
+                // Auto-play pronunciation
+                setTimeout(playAudio, 100);
+            }
+
+            updateProgress();
+            updateLives();
+        }
+
+        function playAudio() {
+            // Robust Player
+            if (!audioText) return;
+
+            // Clean text (remove parens)
+            const clean = audioText.replace(/\(.*\)/, '').trim();
+
+            // Cancel prev
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(clean);
+            utterance.lang = 'fr-FR';
+            utterance.rate = 0.9; // slightly slower for learning
+
+            // Fallback voice selection
+            const voices = window.speechSynthesis.getVoices();
+            const frVoice = voices.find(v => v.lang.includes('fr'));
+            if (frVoice) utterance.voice = frVoice;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Auto-typing listener
+        elInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') check();
+        });
+
+        function normalize(s) {
+            return s.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
+        }
+
+        function check() {
+            if (gameState === 'answered') {
+                next();
+                return;
+            }
+
+            const userVal = normalize(elInput.value);
+            if (!userVal) return;
+
+            const item = queue[currentIdx];
+            let correct = false;
+            let answerText = "";
+
+            if (mode === 'en_fr') {
+                // Checking French
+                // Split options loop
+                // Handle: "l'acteur/actrice" -> ["l'acteur", "actrice"]
+                // Also raw: "l'acteur/actrice"
+                let targets = item.french.split(/[,\/]/).map(normalize);
+                targets.push(normalize(item.french.replace(/\(.*\)/, '')));
+
+                if (targets.some(t => t === userVal)) correct = true;
+                answerText = item.french;
+
+            } else {
+                // Checking English
+                let targets = item.english.split(/[,\/]/).map(normalize);
+                if (targets.some(t => t === userVal)) correct = true;
+                answerText = item.english;
+            }
+
+            if (correct) {
+                handleSuccess();
+            } else {
+                // Fuzzy logic for En->Fr Gender?
+                if (mode === 'en_fr' && checkGenderError(userVal, item.french)) {
+                    elFeedback.innerText = "Check gender/article!";
+                    return; // Let them retry!
+                }
+                handleFail(answerText);
+            }
+
+            gameState = 'answered';
+            elAction.innerText = 'CONTINUE';
+        }
+
+        function checkGenderError(user, target) {
+            // Strip articles from both
+            const clean = s => s.replace(/^(le |la |l'|un |une |des )/i, '').trim();
+            const baseUser = clean(user);
+
+            let targets = target.split(/[,\/]/).map(normalize).map(clean);
+            return targets.includes(baseUser);
+        }
+
+        function handleSuccess() {
+            playTone(600, 'sine');
+            confetti({ origin: { y: 0.6 }, particleCount: 50 });
+            elInput.classList.add('correct');
+            score++;
+
+            // Reveal audio button if hidden
+            elAudioBtn.style.visibility = 'visible';
+            // Auto play audio if French was the target
+            if (mode === 'en_fr') setTimeout(playAudio, 200);
+
+            // GENERATE BONUS SENTENCE
+            const item = queue[currentIdx];
+            const bonus = makeFunnySentence(item.french);
+
+            document.getElementById('bonus-fr').innerText = bonus.french;
+            document.getElementById('bonus-en').innerText = bonus.english;
+            elBonusBox.style.display = 'flex';
+
+            bonusAudioText = bonus.french;
+        }
+
+        function playBonusAudio() {
+            if (!bonusAudioText) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(bonusAudioText);
+            u.lang = 'fr-FR';
+            const voices = window.speechSynthesis.getVoices();
+            const fr = voices.find(v => v.lang.includes('fr'));
+            if (fr) u.voice = fr;
+            window.speechSynthesis.speak(u);
+        }
+
+        function makeFunnySentence(word) {
+            const people = ['Cassia', 'Rainer', 'Sophie', 'Emily', 'Razleen'];
+            const p1 = people[Math.floor(Math.random() * people.length)];
+            let p2 = people[Math.floor(Math.random() * people.length)];
+            while (p2 === p1) p2 = people[Math.floor(Math.random() * people.length)];
+
+            // Clean word
+            let clean = word.replace(/\(.*\)/, '').trim();
+
+            // Heuristics
+            let isVerb = word.toLowerCase().startsWith('se ') || (queue[currentIdx].english.startsWith('to '));
+            let isNoun = /^(le |la |l'|un |une |des )/i.test(word);
+
+            let fr = "";
+            let en = "";
+
+            if (isVerb) {
+                // Verb templates (using infinitive directly often works with "veut", "aime", "deteste")
+                const templates = [
+                    { f: `${p1} veut ${clean} avec ${p2}.`, e: `${p1} wants to ${queue[currentIdx].english.replace('to ', '')} with ${p2}.` },
+                    { f: `${p1} refuse de ${clean} !`, e: `${p1} refuses to ${queue[currentIdx].english.replace('to ', '')}!` },
+                    { f: `Pourquoi ${p1} adore ${clean} ?`, e: `Why does ${p1} love to ${queue[currentIdx].english.replace('to ', '')}?` },
+                    { f: `${p2} a décidé de ${clean} sans ${p1}.`, e: `${p2} decided to ${queue[currentIdx].english.replace('to ', '')} without ${p1}.` }
+                ];
+                let t = templates[Math.floor(Math.random() * templates.length)];
+                fr = t.f; en = t.e;
+            } else if (isNoun) {
+                // Noun templates
+                const templates = [
+                    { f: `${p1} a mangé ${clean} !`, e: `${p1} ate the ${queue[currentIdx].english}!` },
+                    { f: `${p1} a perdu ${clean} dans le bus.`, e: `${p1} lost the ${queue[currentIdx].english} on the bus.` },
+                    { f: `C'est ${clean} de ${p2}.`, e: `It's ${p2}'s ${queue[currentIdx].english}.` },
+                    { f: `${p1} a jeté ${clean} par la fenêtre !`, e: `${p1} threw the ${queue[currentIdx].english} out the window!` },
+                    { f: `${p2} adore ${clean} plus que ${p1}.`, e: `${p2} loves the ${queue[currentIdx].english} more than ${p1}.` }
+                ];
+                let t = templates[Math.floor(Math.random() * templates.length)];
+                fr = t.f; en = t.e;
+            } else {
+                // Fallback (Adjectives, Adverbs, etc.)
+                // "Cassia trouve que [word] est cool." often jarring grammatically if noun used.
+                // "Le mot secret de Cassia est : [word]"
+                const templates = [
+                    { f: `Le mot préféré de ${p1} est : "${clean}".`, e: `${p1}'s favorite word is: "${clean}".` },
+                    { f: `${p1} a crié : "${clean.toUpperCase()} !"`, e: `${p1} shouted: "${clean.toUpperCase()}!"` },
+                    { f: `${p2} pense toujours à : ${clean}.`, e: `${p2} is always thinking about: ${clean}.` }
+                ];
+                let t = templates[Math.floor(Math.random() * templates.length)];
+                fr = t.f; en = t.e;
+            }
+
+            return { french: fr, english: en };
+        }
+
+        function handleFail(ans) {
+            playTone(200, 'sawtooth');
+            lives--;
+            updateLives();
+            elInput.classList.add('wrong');
+            elFeedback.innerText = ans; // Show correct answer
+
+            elAudioBtn.style.visibility = 'visible';
+            if (mode === 'en_fr') setTimeout(playAudio, 200);
+
+            if (lives <= 0) setTimeout(gameOver, 1000);
+        }
+
+        function next() {
+            currentIdx++;
+            if (currentIdx >= queue.length) {
+                winLevel();
+            } else {
+                loadCard();
+            }
+        }
+
+        function winLevel() {
+            const pct = Math.round((score / queue.length) * 100) + '%';
+            // Save header
+            // use original unsliced length? Nah, just save result of this session
+            localStorage.setItem(`score_${DATA.indexOf(currentLevel)}_${mode}`, pct);
+
+            document.getElementById('res-title').innerText = "CLEARED!";
+            document.getElementById('res-pct').innerText = pct;
+            elGame.classList.add('hidden');
+            elResult.classList.remove('hidden');
+            confetti({ particleCount: 150, spread: 100 });
+        }
+
+        function gameOver() {
+            document.getElementById('res-title').innerText = "GAME OVER";
+            document.getElementById('res-pct').innerText = "💀";
+            elGame.classList.add('hidden');
+            elResult.classList.remove('hidden');
+        }
+
+        function exitGame() {
+            elGame.classList.add('hidden');
+            elResult.classList.add('hidden');
+            elLevels.classList.remove('hidden');
+            renderLevels();
+        }
+
+        function updateProgress() {
+            document.getElementById('bar').style.width = ((currentIdx / queue.length) * 100) + '%';
+        }
+
+        function updateLives() {
+            document.getElementById('hearts').innerText = "❤️".repeat(lives);
+        }
+
+        // Synth Sound
+        const actx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type) {
+            if (actx.state === 'suspended') actx.resume();
+            const osc = actx.createOscillator();
+            const g = actx.createGain();
+            osc.connect(g); g.connect(actx.destination);
+            osc.type = type;
+            osc.frequency.value = freq;
+            g.gain.value = 0.1;
+            osc.start();
+            g.gain.exponentialRampToValueAtTime(0.00001, actx.currentTime + 0.3);
+            osc.stop(actx.currentTime + 0.3);
+        }
+
+        function typeKey(k) {
+            elInput.value += k;
+            elInput.focus();
+        }
+    </script>
+</body>
+
+</html>
