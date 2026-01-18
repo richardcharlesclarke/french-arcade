@@ -20,8 +20,8 @@
         :root {
             --bg: #121212;
             --surface: #1E1E1E;
-            --primary: #00FF99;
-            /* RADICAL GREEN CHANGE */
+            --primary: #00A3FF;
+            /* VIBRANT BLUE TO VERIFY UPDATE */
             --secondary: #00FFFF;
             --tertiary: #FFE600;
             --text: #FFFFFF;
@@ -43,7 +43,8 @@
             color: var(--text);
             margin: 0;
             padding: 0;
-            height: 100vh;
+            height: 100dvh;
+            /* Dynamic height */
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -74,6 +75,8 @@
                 height: 100dvh;
                 justify-content: flex-start;
                 padding-top: 5px;
+                overflow: hidden !important;
+                /* CRITICAL: No scrolling on the screen itself */
             }
 
             /* 2. Hide Header in Game to save space */
@@ -91,17 +94,19 @@
                 display: none;
             }
 
-            /* 3. Force Content to Top 60% Maximum */
+            /* 3. Force Content to Top 50% Maximum */
             .game-content {
                 flex: none;
-                /* Don't grow */
                 height: auto;
-                max-height: 60vh;
-                /* Leave 40% for keyboard */
-                overflow-y: scroll;
+                max-height: 50dvh !important;
+                /* STRICT 50% LIMIT */
+                overflow-y: auto;
+                /* Internal scroll only if needed */
                 -webkit-overflow-scrolling: touch;
                 justify-content: flex-start;
                 padding: 0 10px;
+                border-bottom: 2px dashed rgba(255, 163, 255, 0.1);
+                /* Visual guide for middle */
             }
 
             /* 4. Squash Elements */
