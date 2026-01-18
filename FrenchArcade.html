@@ -60,7 +60,7 @@
             display: none !important;
         }
 
-        /* MOBILE OPTIMIZATIONS */
+        /* MOBILE OPTIMIZATIONS (Max fit above keyboard) */
         @media (max-width: 600px) {
             #screen-levels {
                 padding: 10px;
@@ -68,76 +68,94 @@
             }
 
             .header {
-                font-size: 2rem;
+                font-size: 1.8rem;
                 margin: 10px 0 5px;
             }
 
+            /* Compact Game View */
+            .game-content {
+                justify-content: flex-start;
+                padding: 5px 15px;
+            }
+
             .card-box {
-                padding: 15px;
+                padding: 10px;
                 margin-bottom: 5px;
+                border-width: 2px;
             }
 
             .word-text {
-                font-size: 1.8rem;
-                margin-bottom: 5px;
+                font-size: 1.5rem;
+                margin-bottom: 2px;
             }
 
             .mic-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-                margin-top: 5px;
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+                margin-top: 2px;
             }
 
             /* Compact Game Layout for Keyboard */
-            .game-content {
-                justify-content: flex-start;
-                /* Align into top */
-                padding-top: 10px;
-            }
+            /* Align into top */
 
             .label {
-                margin-bottom: 5px;
-                font-size: 0.7rem;
+                margin-bottom: 2px;
+                font-size: 0.6rem;
             }
 
             input {
-                font-size: 1.4rem;
+                font-size: 1.3rem;
                 padding: 5px;
+                border-width: 2px;
             }
 
             .action-btn {
-                padding: 12px;
-                margin-top: 10px;
+                padding: 10px;
+                margin-top: 8px;
                 font-size: 1rem;
+                width: 100%;
             }
 
             .key {
-                width: 32px;
-                height: 32px;
-                font-size: 1rem;
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+                border-radius: 6px;
             }
 
             .accents {
                 margin-top: 5px;
-                gap: 5px;
+                gap: 4px;
+            }
+
+            /* Hide header on very short screens to save space */
+            @media (max-height: 600px) {
+                .header {
+                    display: none;
+                }
             }
 
             /* Bonus Box Compact */
             .bonus-box {
-                padding: 10px;
-                margin-top: 10px;
+                padding: 8px;
+                margin-top: 8px;
             }
 
             .bonus-text {
-                font-size: 1.1em;
+                font-size: 1em;
             }
 
             .bonus-btn {
-                width: 30px;
-                height: 30px;
-                font-size: 1em;
+                width: 28px;
+                height: 28px;
+                font-size: 0.9em;
             }
+        }
+
+
+
+
         }
 
         /* SCREENS */
@@ -547,7 +565,7 @@
 
     <!-- LEVEL SELECT -->
     <div id="screen-levels">
-        <div class="header">ARCADE 2.0</div>
+        <div class="header">FRENCH ARCADE</div>
         <div class="sub-header">SELECT MISSION</div>
         <div id="grid" class="grid"></div>
 
