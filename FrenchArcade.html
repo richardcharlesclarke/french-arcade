@@ -792,7 +792,7 @@
                 // Audio button hidden during guessing? 
                 // Better: plays prompts? No prompt is English.
                 // Target is French. Playing it reveals answer. Hide until answered.
-                elAudioBtn.style.visibility = 'hidden';
+                elAudioBtn.style.display = 'none';
                 audioText = item.french; // store for later
 
             } else {
@@ -802,7 +802,7 @@
                 document.getElementById('accent-bar').style.display = 'none'; // No accents needed for English input
 
                 // Audio visible immediately to help pronunciation
-                elAudioBtn.style.visibility = 'visible';
+                elAudioBtn.style.display = 'flex';
                 audioText = item.french;
 
                 // Auto-play pronunciation
@@ -906,7 +906,7 @@
             score++;
 
             // Reveal audio button if hidden
-            elAudioBtn.style.visibility = 'visible';
+            elAudioBtn.style.display = 'flex';
             // Auto play audio if French was the target
             if (mode === 'en_fr') setTimeout(playAudio, 200);
 
@@ -992,7 +992,7 @@
             elInput.classList.add('wrong');
             elFeedback.innerText = ans; // Show correct answer
 
-            elAudioBtn.style.visibility = 'visible';
+            elAudioBtn.style.display = 'flex';
             if (mode === 'en_fr') setTimeout(playAudio, 200);
 
             if (lives <= 0) setTimeout(gameOver, 1000);
