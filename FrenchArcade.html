@@ -50,6 +50,8 @@
             flex-direction: column;
             background-image: radial-gradient(#222 15%, transparent 16%);
             background-size: 20px 20px;
+            overscroll-behavior: none;
+            /* Stop bounce scroll */
         }
 
         button {
@@ -89,6 +91,9 @@
                 right: 0;
                 bottom: 0;
                 overflow: hidden !important;
+                overscroll-behavior: none !important;
+                touch-action: none;
+                /* Prevent browser scroll/zoom */
             }
 
             /* TOP BAR - LARGER FOR MOBILE */
@@ -114,9 +119,16 @@
             /* GAME CONTENT - NO FLEX GROW */
             #screen-game .game-content {
                 flex: 0 0 auto !important;
-                padding: 18px 12px 8px !important;
-                /* Increased top padding from 8px to 18px */
+                padding: 10px 12px 5px !important;
+                /* Reduced top padding to move everything up */
                 justify-content: flex-start !important;
+            }
+
+            /* Enable touch on buttons specifically */
+            #screen-game button,
+            #screen-game .key,
+            #screen-game input {
+                touch-action: manipulation;
             }
 
             /* CARD */
@@ -149,7 +161,8 @@
 
             /* INPUT */
             .input-group {
-                margin: 6px 0 !important;
+                margin: 4px 0 !important;
+                /* Reduced margin */
             }
 
             input {
@@ -160,7 +173,8 @@
 
             /* ACCENTS */
             .accents {
-                margin: 6px 0 !important;
+                margin: 4px 0 !important;
+                /* Reduced margin */
                 gap: 5px !important;
             }
 
@@ -174,7 +188,8 @@
             /* BUTTON */
             .action-btn {
                 height: 44px !important;
-                margin-top: 8px !important;
+                margin-top: 4px !important;
+                /* Reduced margin to move UP */
                 font-size: 1rem !important;
                 padding: 0 !important;
             }
