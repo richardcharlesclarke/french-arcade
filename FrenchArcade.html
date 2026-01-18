@@ -37,21 +37,23 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html,
+        body {
+            height: 100% !important;
+            overflow: hidden !important;
+            margin: 0;
+            padding: 0;
+            overscroll-behavior: none !important;
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
             background: var(--bg);
             color: var(--text);
-            margin: 0;
-            padding: 0;
-            height: 100dvh;
-            /* Dynamic height */
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             background-image: radial-gradient(#222 15%, transparent 16%);
             background-size: 20px 20px;
-            overscroll-behavior: none;
-            /* Stop bounce scroll */
         }
 
         button {
