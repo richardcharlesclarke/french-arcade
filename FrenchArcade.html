@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-visual">
     <title>🇫🇷 French Arcade</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,6 +68,23 @@
 
         /* ===== MOBILE: ULTRA COMPACT ===== */
         @media (max-width: 600px) {
+            /* Prevent viewport resize when keyboard appears */
+            html {
+                height: 100vh !important;
+                height: -webkit-fill-available !important;
+                position: fixed !important;
+                width: 100% !important;
+                overflow: hidden !important;
+            }
+
+            body {
+                height: 100vh !important;
+                height: -webkit-fill-available !important;
+                position: fixed !important;
+                width: 100% !important;
+                overflow: hidden !important;
+                touch-action: none !important;
+            }
 
             /* Level screen */
             #screen-levels {
@@ -88,14 +105,17 @@
             /* GAME SCREEN */
             #screen-game {
                 position: fixed !important;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                height: -webkit-fill-available !important;
                 overflow: hidden !important;
                 overscroll-behavior: none !important;
-                touch-action: none;
-                /* Prevent browser scroll/zoom */
+                touch-action: none !important;
+                /* Prevent browser scroll/zoom and viewport resize */
             }
 
             /* TOP BAR - LARGER FOR MOBILE */
@@ -742,7 +762,62 @@
         window.onload = () => {
             renderLevels();
             initVoices();
+            preventViewportResize();
         };
+
+        // Prevent viewport resize when keyboard appears on mobile
+        function preventViewportResize() {
+            // Only apply on mobile
+            if (window.innerWidth <= 600) {
+                // Store initial viewport height
+                let initialHeight = window.innerHeight;
+                
+                // Lock viewport height
+                const lockHeight = () => {
+                    const currentHeight = window.innerHeight;
+                    if (currentHeight < initialHeight) {
+                        // Keyboard is open, maintain fixed height
+                        document.documentElement.style.height = initialHeight + 'px';
+                        document.body.style.height = initialHeight + 'px';
+                    } else {
+                        // Update initial height if viewport grew
+                        initialHeight = currentHeight;
+                    }
+                };
+                
+                // Prevent scroll on input focus
+                const preventScroll = () => {
+                    window.scrollTo(0, 0);
+                    document.body.scrollTop = 0;
+                    document.documentElement.scrollTop = 0;
+                };
+                
+                // Listen for resize (keyboard open/close)
+                window.addEventListener('resize', () => {
+                    lockHeight();
+                    preventScroll();
+                });
+                
+                // Prevent scroll on input interactions
+                setTimeout(() => {
+                    const elInput = document.getElementById('inp');
+                    if (elInput) {
+                        elInput.addEventListener('focus', (e) => {
+                            setTimeout(preventScroll, 50);
+                            setTimeout(preventScroll, 150);
+                            setTimeout(preventScroll, 300);
+                        });
+                        
+                        elInput.addEventListener('blur', preventScroll);
+                        elInput.addEventListener('touchstart', preventScroll);
+                    }
+                }, 100);
+                
+                // Prevent any scroll events
+                window.addEventListener('scroll', preventScroll, { passive: false });
+                document.addEventListener('scroll', preventScroll, { passive: false });
+            }
+        }
 
         function initVoices() {
             // Force load voices
